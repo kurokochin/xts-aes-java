@@ -15,8 +15,8 @@ public class XTS {
     /** Encryption mode properties */
     private String file;
     private String out;
-    private int block_size;
-    private int key_length_hex;
+    private static final int BLOCKS_SIZE = 16;
+    private static final int key_length_hex = 64;
     
     /** Lookup table for multiplying alpha */
     private byte[][] tTable;
@@ -40,8 +40,6 @@ public class XTS {
      */
     public XTS(String file, String key, String out) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         this.file = file;
-        this.block_size = 16;
-        this.key_length_hex = 64;
         this.out = out;
 
         /** Split key itu 2 parts */
@@ -54,8 +52,8 @@ public class XTS {
         RandomAccessFile brFile = new RandomAccessFile(file, "r");
         long fileSize = brFile.length();
         brFile.close();
-        this.m = (int) (fileSize / block_size);
-        this.b = (int) (fileSize % block_size);
+        this.m = (int) (fileSize / BLOCKS_SIZE);
+        this.b = (int) (fileSize % BLOCKS_SIZE);
 
         AES aes = new AES(this.key2);
         buildTLookup(aes.encrypt(encryptTweak));
@@ -68,9 +66,9 @@ public class XTS {
      */
     public void processData(boolean forEncryption) throws Exception {
         RandomAccessFile brFile = new RandomAccessFile(file, "r");
-        byte[][] input = new byte[m + 1][block_size];
+        byte[][] input = new byte[m + 1][BLOCKS_SIZE];
         input[m] = new byte[b];
-        byte[][] output = new byte[m + 1][block_size];
+        byte[][] output = new byte[m + 1][BLOCKS_SIZE];
         output[m] = new byte[b];
         for (int i = 0; i < input.length; i++) {
             brFile.read(input[i]);
@@ -106,8 +104,8 @@ public class XTS {
             System.arraycopy(lastBlock, 0, output[m], 0, b);
     
             /** the remaining block is used for the previous block */
-            byte[] cp = new byte[block_size - b];
-            for (int i = b; i < block_size; i++)
+            byte[] cp = new byte[BLOCKS_SIZE - b];
+            for (int i = b; i < BLOCKS_SIZE; i++)
                 cp[i - b] = lastBlock[i];
 
             byte[] blockBeforeLast = new byte[input[m].length + cp.length];
@@ -178,7 +176,7 @@ public class XTS {
      * @param tweakEncrypt, first value of Encrypt(tweak)
      */
     public void buildTLookup(byte[] tweakEncrypt) {
-        byte[][] tTable = new byte[m + 1][block_size];
+        byte[][] tTable = new byte[m + 1][BLOCKS_SIZE];
         tTable[0] = tweakEncrypt;
         for (int i = 1; i < m + 1; i++) {
             tTable[i][0] = (byte) ((2 * (tTable[i - 1][0] % 128)) ^ (135 * (tTable[i - 1][15] / 128)));

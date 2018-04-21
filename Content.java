@@ -1,5 +1,7 @@
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 public class Content extends JPanel implements ActionListener {
@@ -7,6 +9,7 @@ public class Content extends JPanel implements ActionListener {
 	private JLabel plaintext, key, ciphertext;
     private JTextField sourceField, keyField, targetFileName;
     private JButton decrypt, encrypt, openKey, openFile, saveFile;
+    private XTS xts = new XTS();
 
 	public Content() {
         setLayout(null);
@@ -84,12 +87,12 @@ public class Content extends JPanel implements ActionListener {
         decrypt = new JButton("Decrypt");
         decrypt.setSize(100, 20);
         decrypt.setLocation(230, 230);
-        // decrypt.addActionListener(this);
+        decrypt.addActionListener(this);
 
         encrypt = new JButton("Encrypt");
         encrypt.setSize(100, 20);
         encrypt.setLocation(400, 230);
-        // encrypt.addActionListener(this);
+        encrypt.addActionListener(this);
     }
 
     @Override
@@ -104,9 +107,23 @@ public class Content extends JPanel implements ActionListener {
             FilePicker fpTarget = new FilePicker();
             targetFileName.setText(fpTarget.path);
         } else if (aksi.getSource() == encrypt) {
-            // TODO
+            String sourcePath = sourceField.getText();
+            String targetPath = targetFileName.getText();
+            String keyPath = keyField.getText();
+            try {
+                xts.initProcessData(true, keyPath, sourcePath, targetPath);
+            } catch (Exception ex) {
+                ex.printStackTrace();    
+            }
         } else if (aksi.getSource() == decrypt) {
-            // TODO
+            String sourcePath = sourceField.getText();
+            String targetPath = targetFileName.getText();
+            String keyPath = keyField.getText();
+            try {
+                xts.initProcessData(false, keyPath, sourcePath, targetPath);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

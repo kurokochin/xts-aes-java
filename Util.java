@@ -1,26 +1,14 @@
-/*
- * Class Util
- * Version:
- * -1.0 (20-04-2012) develop class Util
+/**
+ *   collection of utility routines for converting and displaying binary
+ *   saved in byte/short/int arrays, and loaded/displayed using hex.
  *
- * Copyright 2010 Omar Abdillah, Prahesa Kusuma Setia, Yahya Muhammad
+ *   @author Lawrie Brown, Oct 2001
  */
-package kripto.tugas1;
-
-/** Class Util
-  * Class ini merupakan kelas untuk melakukan pengubahan-pengubahan terhadap data
-  *
-  * @author Omar Abdillah (0906510451)
-  * @author Prahesa Kusuma  Setia (0906510470)
-  * @author Yahya Muhammad (0906510565)
-  */
 class Util {
 
-    /**
-     * merupakan kelas yang digunakan untuk untuk mengkonversi short array ke byte array
-     * @param sa merupakan short array yang akan dikonversi
-     * @return byte array hasil representasi dari short array
-     */
+    //......................................................................
+    // utility conversions between byte, short and int arrays
+
     public static byte[] short2byte (short[] sa) {
         int length = sa.length;
         byte[] ba = new byte[length * 2];
@@ -32,12 +20,7 @@ class Util {
         return (ba);
     }
 
-    /**
-     * merupakan kelas yang digunakan untuk mengkonversi byte array ke short array
-     * 
-     * @param ba merupakan byte array yang akan dikonversi
-     * @return hasil dari konversi yang berupa short array
-     */
+    //......................................................................
     public static short[] byte2short (byte[] ba) {
         int length = ba.length;
         short[] sa = new short[length / 2];
@@ -48,12 +31,7 @@ class Util {
         return (sa);
     }
 
-    /**
-     * merupakan kelas yang digunakan untuk mengkonversi int array ke dalam byte array
-     * 
-     * @param ia merupakan int array yang akan dikonversi
-     * @return merupakan byte array hasil dari konversi
-     */
+    //......................................................................
     public static byte[] int2byte (int[] ia) {
         int length = ia.length;
         byte[] ba = new byte[length * 4];
@@ -67,12 +45,7 @@ class Util {
         return (ba);
     }
 
-    /**
-     * merupakan kelas yang digunakan untuk mengkonversi byte array ke int array
-     * 
-     * @param ba merupakan byte array yang akan dikonversi
-     * @return merupakan int array hasil dari konversi
-     */
+    //......................................................................
     public static int[] byte2int (byte[] ba) {
         int length = ba.length;
         int[] ia = new int[length / 4];
@@ -84,18 +57,22 @@ class Util {
         }
         return (ia);
     }
+
+    //......................................................................
+    // utility methods (adapted from cryptix.util.core.Hex class)
 
-
-    /** mapping array dari  hex value (0-15) ke corresponding hex digit (0-9a-f). */
+    /** array mapping hex value (0-15) to corresponding hex digit (0-9a-f). */
     public static final char[] HEX_DIGITS = {
         '0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'
     };
 
     /**
-     * utility method untuk mengonversi byte array ke hexadecimal string
-     *
-     * @param ba array of bytes yang akan dikonversi
-     * @return representasi hex dari byte array tersebut   
+     * utility method to convert a byte array to a hexadecimal string.
+     * <p>
+     * Each byte of the input array is converted to 2 hex symbols,
+     * using the HEX_DIGITS array for the mapping, with spaces after each pair.
+     * @param ba array of bytes to be converted into hex
+     * @return hex representation of byte array     
      */
     public static String toHEX (byte[] ba) {
         int length = ba.length;
@@ -110,9 +87,12 @@ class Util {
     }
 
     /**
-     * utility method yang digunakan untuk mengonversi short array ke hexadecimal string
-     * @param ia merupakan short array yang akan dikonversi
-     * @return  merupakan hasil dari konversi berupa hexadecimal string
+     * utility method to convert a short array to a hexadecimal string.
+     * <p>
+     * Each word of the input array is converted to 4 hex symbols,
+     * using the HEX_DIGITS array for the mapping, with spaces after every 4.
+     * @param ia array of shorts to be converted into hex
+     * @return hex representation of short array     
      */
     public static String toHEX (short[] ia) {
         int length = ia.length;
@@ -129,9 +109,12 @@ class Util {
     }
 
     /**
-     * utility method yang digunakan untuk mengonversi int array ke hexadecimal string
-     * @param ia merupakan int array yang akan dikonversi
-     * @return  merupakan hasil dari konversi berupa hexadecimal string
+     * utility method to convert an int array to a hexadecimal string.
+     * <p>
+     * Each word of the input array is converted to 8 hex symbols,
+     * using the HEX_DIGITS array for the mapping, with spaces after every 4.
+     * @param ia array of ints to be converted into hex
+     * @return hex representation of int array     
      */
     public static String toHEX (int[] ia) {
         int length = ia.length;
@@ -152,11 +135,13 @@ class Util {
         return new String(buf);
     }
 
-
     /**
-     * merupakan method yang digunakan untuk mengonversi byte ke dalam hexadecimal string
-     * @param b merupakan byte yang akan dikonversi
-     * @return  merupakan hasil dari konversi
+     * utility method to convert a byte to a hexadecimal string.
+     * <p>
+     * the byte is converted to 2 hex symbols,
+     * using the HEX_DIGITS array for the mapping.
+     * @param b byte to be converted into hex
+     * @return hex representation of byte
      */
     public static String toHEX1 (byte b) {
         char[] buf = new char[2];
@@ -165,11 +150,14 @@ class Util {
         buf[j++] = HEX_DIGITS[ b        & 0x0F];
         return new String(buf);
     }
-    
+
     /**
-     * merupakan utility method yang diguankan untuk mengkonversi byte array ke hexadecimal string
-     * @param ba merupakan byte array yang akan dikonversi
-     * @return merupakan hasil dari konversi yang berupa hexadecimal string
+     * utility method to convert a byte array to a hexadecimal string.
+     * <p>
+     * Each byte of the input array is converted to 2 hex symbols,
+     * using the HEX_DIGITS array for the mapping.
+     * @param ba array of bytes to be converted into hex
+     * @return hex representation of byte array     
      */
     public static String toHEX1 (byte[] ba) {
         int length = ba.length;
@@ -181,11 +169,14 @@ class Util {
         }
         return new String(buf);
     }
-    
+
     /**
-     * merupakan utility method yang digunakan untuk mengonversi short array ke dalam hexadecimal string
-     * @param ia merupakan short array yang akan dikonversi
-     * @return merupakan hasil dari konversi berupa kexadesimal string
+     * utility method to convert a short array to a hexadecimal string.
+     * <p>
+     * Each word of the input array is converted to 4 hex symbols,
+     * using the HEX_DIGITS array for the mapping.
+     * @param ia array of shorts to be converted into hex
+     * @return hex representation of short array     
      */
     public static String toHEX1 (short[] ia) {
         int length = ia.length;
@@ -199,11 +190,14 @@ class Util {
         }
         return new String(buf);
     }
-    
+
     /**
-     * merupakan utility method yang digunakan untuk mengonversi integer ke hexadecimal string
-     * @param i merupakan integer yang akan dikonversi
-     * @return merupakan hasil dari konversi berupa hexadecimal string
+     * utility method to convert an int to a hexadecimal string.
+     * <p>
+     * the int is converted to 8 hex symbols,
+     * using the HEX_DIGITS array for the mapping.
+     * @param i int to be converted into hex
+     * @return hex representation of int
      */
     public static String toHEX1 (int i) {
         char[] buf = new char[8];
@@ -219,11 +213,13 @@ class Util {
         return new String(buf);
     }
 
-    
     /**
-     * merupakan utility method yang digunakan untuk mengonversi int array ke dalam hexadecimal string
-     * @param ia merupakan int array yang akan dikonversi
-     * @return  merupakan hasil dari konversi berupa hexadecimal string
+     * utility method to convert an int array to a hexadecimal string.
+     * <p>
+     * Each word of the input array is converted to 8 hex symbols,
+     * using the HEX_DIGITS array for the mapping.
+     * @param ia array of ints to be converted into hex
+     * @return hex representation of int array     
      */
     public static String toHEX1 (int[] ia) {
         int length = ia.length;
@@ -241,11 +237,14 @@ class Util {
         }
         return new String(buf);
     }
-    
+
+
+    //......................................................................
     /**
-     * merupakan utility method yang digunakan untuk mengonversi dari hexadecimal string ke dalam byte array
-     * @param hex merupakan hexadecimal string yang akan dikonversi
-     * @return merupakan hasil dari konversi berupa byte array
+     * Returns a byte array from a string of hexadecimal digits.
+     *
+     * @param hex string of hex characters
+     * @return byte array of binary data corresponding to hex string input
      */
     public static byte[] hex2byte(String hex) {
         int len = hex.length();
@@ -262,10 +261,12 @@ class Util {
         return buf;
     }
 
+    //......................................................................
     /**
-     * merupakan method yang digunakan untuk melakukan validasi terhadao input berupa hexadecimal string
-     * @param hex input yang akan divalidasi
-     * @return berupa boolean yang menyatakan kevalidan dari data
+     * Returns true if the string consists ONLY of valid hex characters
+     *
+     * @param hex string of hex characters
+     * @return true if a valid hex string
      */
     public static boolean isHex(String hex) {
         int len = hex.length();
@@ -279,11 +280,13 @@ class Util {
 	}
 	return true;
     }
-    
+
+    //......................................................................
     /**
-     * merupakan method yang digunakan untuk mengonversi karakter hexadecimal ke string
-     * @param ch input yang berupa hexadecimal karakter
-     * @return integer yang sesuai dengan karakter hexadecimalnya
+     * Returns the number from 0 to 15 corresponding to the hex digit <i>ch</i>.
+     *
+     * @param ch hex digit character (must be 0-9A-Fa-f)
+     * @return   numeric equivalent of hex digit (0-15)
      */
     public static int hexDigit(char ch) {
         if (ch >= '0' && ch <= '9')
@@ -293,7 +296,7 @@ class Util {
         if (ch >= 'a' && ch <= 'f')
             return ch - 'a' + 10;
 
-        return(0);
+        return(0);	// any other char is treated as 0
     }
 
 }

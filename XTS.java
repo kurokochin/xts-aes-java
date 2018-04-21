@@ -12,17 +12,33 @@ import javax.crypto.NoSuchPaddingException;
 
 
 public class XTS {
+    
+    /** Encryption mode properties */
     private String file;
     private String out;
     private int block_size;
     private int key_length_hex;
-    private byte[][] multiplyAlpha;
-    private byte[] nonce = ByteUtil.hexToBytes("12345678901234567890123456789012");
+    
+    /** Lookup table for multiplying alpha */
+    private byte[][] tTable;
+    /** Tweak values */
+    private byte[] encryptTweak = ByteUtil.hexToBytes("12345678901234567890123456789012");
+    
+    /** How many full blocks m, and the remaining block b that are less than 128bits*/
     private int m;
     private int b;
+    
+    /** Key1 and Key2, derived from K = K1 || K2 (Concatenation) */
     private byte[] key1;
     private byte[] key2;
 
+    /**
+     * Constructor for initialize files (plaintext, ciphertext, key) needed for XTS-AES
+     * 
+     * @param file, file path containing input file
+     * @param key, file path containing the key
+     * @param out, file path containing output file
+     */
     public XTS(String file, String key, String out) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         this.file = file;
         this.block_size = 16;
@@ -42,7 +58,7 @@ public class XTS {
         this.b = (int) (fileSize % block_size);
 
         AES aes = new AES(this.key2);
-        multiplyAlpha(aes.encrypt(nonce));
+        buildTLookup(aes.encrypt(encryptTweak));
     }
 
 
@@ -60,6 +76,7 @@ public class XTS {
             output[q] = blockEnc(key1, key2, input[q], q);
         }
 
+        /** Check if it is needed to do ciphertext stealing */
         if (b == 0) {
             output[m - 1] = blockEnc(key1, key2, input[m - 1], m - 1);
             output[m] = new byte[0];
@@ -88,9 +105,10 @@ public class XTS {
         brOut.close();
     }
 
+    /** Encryption per block */
     public byte[] blockEnc(byte[] key1, byte[] key2, byte[] p, int j) throws Exception {
         AES aes = new AES(key2);
-        byte[] t = multiplyAlpha[j];
+        byte[] t = tTable[j];
         byte[] pp = xortweaktext(t, p);
         aes = new AES(key1);
         byte[] cc = aes.encrypt(pp);
@@ -112,7 +130,7 @@ public class XTS {
         for (int q = 0; q <= m - 2; q++) {
             output[q] = blockDec(key1, key2, input[q], q);
         }
-
+        /** Check if it is needed to do ciphertext stealing */
         if (b == 0) {
             output[m - 1] = blockDec(key1, key2, input[m - 1], m - 1);
             output[m] = new byte[0];
@@ -141,9 +159,10 @@ public class XTS {
         brOut.close();
     }
 
+    /** Decryption per block */
     public byte[] blockDec(byte[] key1, byte[] key2, byte[] c, int j) throws Exception {
         AES aes = new AES(key2);
-        byte[] t = multiplyAlpha[j];
+        byte[] t = tTable[j];
         byte[] cc = xortweaktext(t, c);
         aes = new AES(key1);
         byte[] pp = aes.decrypt(cc);
@@ -153,18 +172,20 @@ public class XTS {
 
     }
 
-    public void multiplyAlpha(byte[] tweakEncrypt) {
-        byte[][] multiplyDP = new byte[m + 1][block_size];
-        multiplyDP[0] = tweakEncrypt;
+    /** Create lookup table for T = encrypt(i) * alpha^j */
+    public void buildTLookup(byte[] tweakEncrypt) {
+        byte[][] tTable = new byte[m + 1][block_size];
+        tTable[0] = tweakEncrypt;
         for (int i = 1; i < m + 1; i++) {
-            multiplyDP[i][0] = (byte) ((2 * (multiplyDP[i - 1][0] % 128)) ^ (135 * (multiplyDP[i - 1][15] / 128)));
+            tTable[i][0] = (byte) ((2 * (tTable[i - 1][0] % 128)) ^ (135 * (tTable[i - 1][15] / 128)));
             for (int k = 1; k < 16; k++) {
-                multiplyDP[i][k] = (byte) ((2 * (multiplyDP[i - 1][k] % 128)) ^ (multiplyDP[i - 1][k - 1] / 128));
+                tTable[i][k] = (byte) ((2 * (tTable[i - 1][k] % 128)) ^ (tTable[i - 1][k - 1] / 128));
             }
         }
-        this.multiplyAlpha = multiplyDP;
+        this.tTable = tTable;
     }
 
+    /** XOR operation between byte in block and T */
     public byte[] xortweaktext(byte[] tweakEncrypt, byte[] textBlock) {
         byte[] result = new byte[16];
         for (int i = 0; i < tweakEncrypt.length; i++) {

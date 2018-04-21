@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -45,6 +44,7 @@ public class XTS {
         this.key_length_hex = 64;
         this.out = out;
 
+        /** Split key itu 2 parts */
         BufferedReader brKey = new BufferedReader(new FileReader(key));
         String read = brKey.readLine();
         this.key1 = ByteUtil.hexToBytes(read.substring(0, key_length_hex / 2));
@@ -61,8 +61,12 @@ public class XTS {
         buildTLookup(aes.encrypt(encryptTweak));
     }
 
-
-    public void encrypt() throws Exception {
+    /**
+     * Encryption/Decryption process
+     * 
+     * @param forEncryption, true if data is used for encryption, else false
+     */
+    public void processData(boolean forEncryption) throws Exception {
         RandomAccessFile brFile = new RandomAccessFile(file, "r");
         byte[][] input = new byte[m + 1][block_size];
         input[m] = new byte[b];
@@ -72,27 +76,48 @@ public class XTS {
             brFile.read(input[i]);
         }
 
+        /** Encrypt/Decrypt per block */
         for (int q = 0; q <= m - 2; q++) {
-            output[q] = blockEnc(key1, key2, input[q], q);
+            if (forEncryption) {
+                output[q] = blockEnc(key1, key2, input[q], q);
+            } else {
+                output[q] = blockDec(key1, key2, input[q], q);
+            }
         }
 
         /** Check if it is needed to do ciphertext stealing */
         if (b == 0) {
-            output[m - 1] = blockEnc(key1, key2, input[m - 1], m - 1);
+            /** Do the process the same as above */
+            if (forEncryption) {
+                output[m - 1] = blockEnc(key1, key2, input[m - 1], m - 1);
+            } else {
+                output[m - 1] = blockDec(key1, key2, input[m - 1], m - 1);
+            }
             output[m] = new byte[0];
         } else {
-            byte[] cc = blockEnc(key1, key2, input[m - 1], m - 1);
-            System.arraycopy(cc, 0, output[m], 0, b);
+            /** Do ciphertext stealing */
+            byte[] lastBlock;
+            if (forEncryption) {
+                lastBlock = blockEnc(key1, key2, input[m - 1], m - 1);
+            } else {
+                lastBlock = blockDec(key1, key2, input[m - 1], m);
+            }
+            /** Encrypted/Decrpyted last block is from the first b bits from previous block */
+            System.arraycopy(lastBlock, 0, output[m], 0, b);
+    
+            /** the remaining block is used for the previous block */
             byte[] cp = new byte[block_size - b];
             for (int i = b; i < block_size; i++)
-                cp[i - b] = cc[i];
+                cp[i - b] = lastBlock[i];
 
-            byte[] pp = new byte[input[m].length + cp.length];
-            System.arraycopy(input[m], 0, pp, 0, input[m].length);
-            System.arraycopy(cp, 0, pp, input[m].length, cp.length);
-
-            output[m - 1] = blockEnc(key1, key2, pp, m);
-
+            byte[] blockBeforeLast = new byte[input[m].length + cp.length];
+            System.arraycopy(input[m], 0, blockBeforeLast, 0, input[m].length);
+            System.arraycopy(cp, 0, blockBeforeLast, input[m].length, cp.length);
+            if (forEncryption) {
+                output[m - 1] = blockEnc(key1, key2, blockBeforeLast, m);
+            } else {
+                output[m - 1] = blockDec(key1, key2, blockBeforeLast, m-1);
+            }
         }
 
         brFile.close();
@@ -105,7 +130,15 @@ public class XTS {
         brOut.close();
     }
 
-    /** Encryption per block */
+    /**
+     * Computes the encryption, C = E(P XOR T) XOR T
+     * T is obtained from the lookup table
+     * 
+     * @param key1, key1
+     * @param key2, key2
+     * @param p, the plain text block
+     * @param j, number sequence
+     */
     public byte[] blockEnc(byte[] key1, byte[] key2, byte[] p, int j) throws Exception {
         AES aes = new AES(key2);
         byte[] t = tTable[j];
@@ -117,49 +150,15 @@ public class XTS {
         return c;
     }
 
-    public void decrypt() throws Exception {
-        RandomAccessFile brFile = new RandomAccessFile(file, "r");
-        byte[][] input = new byte[m + 1][block_size];
-        input[m] = new byte[b];
-        byte[][] output = new byte[m + 1][block_size];
-        output[m] = new byte[b];
-        for (int i = 0; i < input.length; i++) {
-            brFile.read(input[i]);
-        }
-
-        for (int q = 0; q <= m - 2; q++) {
-            output[q] = blockDec(key1, key2, input[q], q);
-        }
-        /** Check if it is needed to do ciphertext stealing */
-        if (b == 0) {
-            output[m - 1] = blockDec(key1, key2, input[m - 1], m - 1);
-            output[m] = new byte[0];
-        } else {
-            byte[] pp = blockDec(key1, key2, input[m - 1], m);
-            System.arraycopy(pp, 0, output[m], 0, b);
-            byte[] cp = new byte[block_size - b];
-            for (int i = b; i < block_size; i++)
-                cp[i - b] = pp[i];
-
-            byte[] cc = new byte[input[m].length + cp.length];
-            System.arraycopy(input[m], 0, cc, 0, input[m].length);
-            System.arraycopy(cp, 0, cc, input[m].length, cp.length);
-
-            output[m - 1] = blockDec(key1, key2, cc, m - 1);
-
-        }
-
-        brFile.close();
-
-        RandomAccessFile brOut = new RandomAccessFile(out, "rw");
-        for (int i = 0; i < output.length; i++) {
-            for (int j = 0; j < output[i].length; j++)
-                brOut.write(output[i][j]);
-        }
-        brOut.close();
-    }
-
-    /** Decryption per block */
+    /**
+     * Computes the decryption, C = E(P XOR T) XOR T
+     * T is obtained from the lookup table
+     * 
+     * @param key1, key1
+     * @param key2, key2
+     * @param c, the cipher text block
+     * @param j, number sequence
+     */
     public byte[] blockDec(byte[] key1, byte[] key2, byte[] c, int j) throws Exception {
         AES aes = new AES(key2);
         byte[] t = tTable[j];
@@ -172,7 +171,12 @@ public class XTS {
 
     }
 
-    /** Create lookup table for T = encrypt(i) * alpha^j */
+    /** 
+     * Build a lookup table which computes T = E(i) XOR alpha^j using key2
+     * For easier and faster computation
+     * 
+     * @param tweakEncrypt, first value of Encrypt(tweak)
+     */
     public void buildTLookup(byte[] tweakEncrypt) {
         byte[][] tTable = new byte[m + 1][block_size];
         tTable[0] = tweakEncrypt;
@@ -185,7 +189,11 @@ public class XTS {
         this.tTable = tTable;
     }
 
-    /** XOR operation between byte in block and T */
+    /** XOR operation between byte in block and Tweak
+     * 
+     * @param tweakEnrypt, T value based on lookup table
+     * @param textBlock, text block to be xor with
+    */
     public byte[] xortweaktext(byte[] tweakEncrypt, byte[] textBlock) {
         byte[] result = new byte[16];
         for (int i = 0; i < tweakEncrypt.length; i++) {

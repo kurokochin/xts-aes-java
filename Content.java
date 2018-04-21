@@ -115,13 +115,13 @@ public class Content extends JPanel implements ActionListener {
                 String keyPath = keyField.getText();
 
                 XTS xts = new XTS(sourcePath, keyPath, targetPath);
-            	FileWriter outFile = new FileWriter(targetPath);
-    	        if (aksi.getSource() == encrypt) {
-                    xts.encrypt();
+                boolean forEncryption;
+            	if (aksi.getSource() == encrypt) {
+                    forEncryption = true;
     	        } else {
-                    xts.decrypt();
+                    forEncryption = false;
             	}
-            	outFile.close();
+                xts.processData(forEncryption);
         	} catch (Exception e) {
         		e.printStackTrace(System.out);
         	}

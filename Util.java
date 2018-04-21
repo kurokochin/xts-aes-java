@@ -151,14 +151,6 @@ class Util {
         return new String(buf);
     }
 
-    /**
-     * utility method to convert a byte array to a hexadecimal string.
-     * <p>
-     * Each byte of the input array is converted to 2 hex symbols,
-     * using the HEX_DIGITS array for the mapping.
-     * @param ba array of bytes to be converted into hex
-     * @return hex representation of byte array
-     */
     public static String toHEX1 (byte[] ba) {
         int length = ba.length;
         char[] buf = new char[length * 2];
@@ -170,14 +162,6 @@ class Util {
         return new String(buf);
     }
 
-    /**
-     * utility method to convert a short array to a hexadecimal string.
-     * <p>
-     * Each word of the input array is converted to 4 hex symbols,
-     * using the HEX_DIGITS array for the mapping.
-     * @param ia array of shorts to be converted into hex
-     * @return hex representation of short array
-     */
     public static String toHEX1 (short[] ia) {
         int length = ia.length;
         char[] buf = new char[length * 4];
@@ -191,14 +175,6 @@ class Util {
         return new String(buf);
     }
 
-    /**
-     * utility method to convert an int to a hexadecimal string.
-     * <p>
-     * the int is converted to 8 hex symbols,
-     * using the HEX_DIGITS array for the mapping.
-     * @param i int to be converted into hex
-     * @return hex representation of int
-     */
     public static String toHEX1 (int i) {
         char[] buf = new char[8];
 	int j = 0;

@@ -1,3 +1,2 @@
-public interface CipherParameters
-{
+public interface CipherParameters {
 }

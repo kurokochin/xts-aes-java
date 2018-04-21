@@ -3,7 +3,7 @@ import java.io.*;
 /**
  * Class XTS yang berisikan perintah untuk melakuan enkripsi dekripsi
  * dengan menggunakan metode XTS mode dan AES
- * 
+ *
  * @author Grace Angelica
  * @author Stephen Jaya Gunawan
  * @author Ricky Putra Nursalim
@@ -14,13 +14,13 @@ class XTS {
     private static byte[] tweak = Util.hex2byte("98765432109876543210987654321098");
 
     private static int NUMBER_OF_THREAD = 100;
-    
+
     private byte[] encryptTweak = null;
     private byte[][] tTable = null;
 
     /**
      * Initialize files (plaintext, ciphertext, key) needed for XTS-AES
-     * 
+     *
      * @param forEncryption, true if data is used for encryption, else false
      * @param keyPath, file path containing the key
      * @param sourcePath, file path containing plain text
@@ -46,7 +46,7 @@ class XTS {
         byte[] k2 = Util.hex2byte(key2);
 
         processData(forEncryption, inFile, outFile, k1, k2, tweak);
-        
+
         inFile.close();
         outFile.close();
     }
@@ -54,7 +54,7 @@ class XTS {
     /**
      * Encryption/Decryption process
      * Each block is encrypted/decryption using a single thread
-     * 
+     *
      * @param forEncryption, true if data is used for encryption, else false
      * @param inText, file reference of the plain text
      * @param outText, file reference of the cipher text
@@ -83,7 +83,7 @@ class XTS {
 
         /** Create T table which stores T at sequence j */
         if (this.encryptTweak == null) this.encryptTweak = aes.encrypt(tweak);
-        buildTLookup(this.encryptTweak, noIndependentProcess + 1); 
+        buildTLookup(this.encryptTweak, noIndependentProcess + 1);
 
         /** Uses threading to process each block independently */
         Thread[] worker = new Thread[NUMBER_OF_THREAD];
@@ -99,7 +99,7 @@ class XTS {
                 }
             }
         }
-    
+
         for (int i = 0; i < NUMBER_OF_THREAD; i++) {
             if (worker[i] != null) {
                 worker[i].join(0);
@@ -146,14 +146,14 @@ class XTS {
         }
 
         /** Write results to output file */
-        for (int i = 0 ; i < outBuffer.length; i++) {    
+        for (int i = 0 ; i < outBuffer.length; i++) {
             outText.write(outBuffer[i]);
         }
     }
 
     /**
      * Computes the encryption, C = E(P XOR T) XOR T
-     * 
+     *
      * @param resultCipher, the encrypted block
      * @param plainText, the plain text block
      * @param key1, the key
@@ -177,12 +177,12 @@ class XTS {
         /** Writes the output to resultCipher */
         for (int x = 0; x < cipherBlockXorT.length; x++) {
             resultCipher[x] = (byte) (cipherBlockXorT[x] ^ t[x]);
-        } 
+        }
     }
 
     /**
     * Computes the decryption, P = D(C XOR T) XOR T
-    * 
+    *
     * @param resultCipher, the decrypted block
     * @param plainText, the cipher text block
     * @param key1, the key
@@ -209,11 +209,11 @@ class XTS {
         }
     }
 
-    /** 
+    /**
      * Build a lookup table which computes T = E(i) XOR alpha^j using key2
      * For easier and faster computation
-     * 
-     * @param a, first value of Encrypt(tweak) 
+     *
+     * @param a, first value of Encrypt(tweak)
      * @param numBlock, how many sequence j to compute
      */
     public void buildTLookup(byte[] a, int numBlock) {
@@ -230,7 +230,7 @@ class XTS {
     /**
      * Class Runnable yang digunakan untuk mulithreading
      * Multithreading untuk proses encrypt/decrypt per block
-     * 
+     *
      */
     class ProcessBlock implements Runnable {
 

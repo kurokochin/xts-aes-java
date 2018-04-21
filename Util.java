@@ -57,7 +57,7 @@ class Util {
         }
         return (ia);
     }
-
+
     //......................................................................
     // utility methods (adapted from cryptix.util.core.Hex class)
 
@@ -72,7 +72,7 @@ class Util {
      * Each byte of the input array is converted to 2 hex symbols,
      * using the HEX_DIGITS array for the mapping, with spaces after each pair.
      * @param ba array of bytes to be converted into hex
-     * @return hex representation of byte array     
+     * @return hex representation of byte array
      */
     public static String toHEX (byte[] ba) {
         int length = ba.length;
@@ -92,7 +92,7 @@ class Util {
      * Each word of the input array is converted to 4 hex symbols,
      * using the HEX_DIGITS array for the mapping, with spaces after every 4.
      * @param ia array of shorts to be converted into hex
-     * @return hex representation of short array     
+     * @return hex representation of short array
      */
     public static String toHEX (short[] ia) {
         int length = ia.length;
@@ -114,7 +114,7 @@ class Util {
      * Each word of the input array is converted to 8 hex symbols,
      * using the HEX_DIGITS array for the mapping, with spaces after every 4.
      * @param ia array of ints to be converted into hex
-     * @return hex representation of int array     
+     * @return hex representation of int array
      */
     public static String toHEX (int[] ia) {
         int length = ia.length;
@@ -157,7 +157,7 @@ class Util {
      * Each byte of the input array is converted to 2 hex symbols,
      * using the HEX_DIGITS array for the mapping.
      * @param ba array of bytes to be converted into hex
-     * @return hex representation of byte array     
+     * @return hex representation of byte array
      */
     public static String toHEX1 (byte[] ba) {
         int length = ba.length;
@@ -176,7 +176,7 @@ class Util {
      * Each word of the input array is converted to 4 hex symbols,
      * using the HEX_DIGITS array for the mapping.
      * @param ia array of shorts to be converted into hex
-     * @return hex representation of short array     
+     * @return hex representation of short array
      */
     public static String toHEX1 (short[] ia) {
         int length = ia.length;
@@ -219,7 +219,7 @@ class Util {
      * Each word of the input array is converted to 8 hex symbols,
      * using the HEX_DIGITS array for the mapping.
      * @param ia array of ints to be converted into hex
-     * @return hex representation of int array     
+     * @return hex representation of int array
      */
     public static String toHEX1 (int[] ia) {
         int length = ia.length;

@@ -3,6 +3,7 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import java.io.*;
 
 public class Content extends JPanel implements ActionListener {
 
@@ -97,6 +98,8 @@ public class Content extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent aksi) {
+    	final String dataUnit = "00000000000000ff";
+    	String tweakKey = "3141592653589793238462643383279502884197169399375105820974944592";
         if (aksi.getSource() == openFile) {
             FilePicker fpSource = new FilePicker();
             sourceField.setText(fpSource.path);
@@ -106,24 +109,47 @@ public class Content extends JPanel implements ActionListener {
         } else if (aksi.getSource() == saveFile) {
             FilePicker fpTarget = new FilePicker();
             targetFileName.setText(fpTarget.path);
-        } else if (aksi.getSource() == encrypt) {
+        } else if (aksi.getSource() == encrypt || aksi.getSource() == decrypt) {
+        	try {
             String sourcePath = sourceField.getText();
             String targetPath = targetFileName.getText();
             String keyPath = keyField.getText();
-            try {
-                xts.initProcessData(true, keyPath, sourcePath, targetPath);
-            } catch (Exception ex) {
-                ex.printStackTrace();    
-            }
-        } else if (aksi.getSource() == decrypt) {
-            String sourcePath = sourceField.getText();
-            String targetPath = targetFileName.getText();
-            String keyPath = keyField.getText();
-            try {
-                xts.initProcessData(false, keyPath, sourcePath, targetPath);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+
+            BufferedReader br = new BufferedReader(new FileReader(keyPath));
+            String key = br.readLine();
+            CipherParameters params = new KeyParameter(ByteUtil.hexToBytes(key));
+	        CipherParameters tweakParams = new KeyParameter(ByteUtil.hexToBytes(tweakKey));
+	        BlockCipher cipher = new AESFastEngine();
+	        BlockCipher tweakCipher = new AESFastEngine();
+	        cipher.init(true, params);
+	        tweakCipher.init(true, tweakParams);
+
+	        // Setup XTS mode test
+	        XTSAES xts = new XTSAES(cipher, tweakCipher);
+	        byte[] plaintext;
+	        byte[] ciphertext;
+	        long dataUnitNumber = ByteUtil.loadInt64BE(ByteUtil.hexToBytes(dataUnit), 0);
+	        byte[] createdCipherText = new byte[xts.getDataUnitSize()];
+	        byte[] decryptedPlainText = new byte[xts.getDataUnitSize()];
+
+
+	        br = new BufferedReader(new FileReader(sourcePath));
+        	FileWriter outFile = new FileWriter(targetPath);
+	        if (aksi.getSource() == encrypt) {
+	        	plaintext = ByteUtil.hexToBytes(br.readLine());
+	        	xts.processDataUnit(plaintext, 0, createdCipherText, 0, dataUnitNumber);
+	        	outFile.write(ByteUtil.bytesToHex(createdCipherText));
+	        } else {
+	        	ciphertext = ByteUtil.hexToBytes(br.readLine());
+	        	cipher.init(false, params);
+		        xts.resetCipher(cipher);
+		        xts.processDataUnit(ciphertext, 0, decryptedPlainText, 0, dataUnitNumber);
+		        outFile.write(ByteUtil.bytesToHex(decryptedPlainText));
+        	}
+        	outFile.close();
+        	} catch (Exception e) {
+        		e.printStackTrace(System.out);
+        	}
         }
     }
 

@@ -10,7 +10,6 @@ public class Content extends JPanel implements ActionListener {
 	private JLabel plaintext, key, ciphertext;
     private JTextField sourceField, keyField, targetFileName;
     private JButton decrypt, encrypt, openKey, openFile, saveFile;
-    private XTS xts = new XTS();
 
 	public Content() {
         setLayout(null);
@@ -111,42 +110,18 @@ public class Content extends JPanel implements ActionListener {
             targetFileName.setText(fpTarget.path);
         } else if (aksi.getSource() == encrypt || aksi.getSource() == decrypt) {
         	try {
-            String sourcePath = sourceField.getText();
-            String targetPath = targetFileName.getText();
-            String keyPath = keyField.getText();
+                String sourcePath = sourceField.getText();
+                String targetPath = targetFileName.getText();
+                String keyPath = keyField.getText();
 
-            BufferedReader br = new BufferedReader(new FileReader(keyPath));
-            String key = br.readLine();
-            CipherParameters params = new KeyParameter(ByteUtil.hexToBytes(key));
-	        CipherParameters tweakParams = new KeyParameter(ByteUtil.hexToBytes(tweakKey));
-	        BlockCipher cipher = new AESFastEngine();
-	        BlockCipher tweakCipher = new AESFastEngine();
-	        cipher.init(true, params);
-	        tweakCipher.init(true, tweakParams);
-
-	        // Setup XTS mode test
-	        XTSAES xts = new XTSAES(cipher, tweakCipher);
-	        byte[] plaintext;
-	        byte[] ciphertext;
-	        long dataUnitNumber = ByteUtil.loadInt64BE(ByteUtil.hexToBytes(dataUnit), 0);
-	        byte[] createdCipherText = new byte[xts.getDataUnitSize()];
-	        byte[] decryptedPlainText = new byte[xts.getDataUnitSize()];
-
-
-	        br = new BufferedReader(new FileReader(sourcePath));
-        	FileWriter outFile = new FileWriter(targetPath);
-	        if (aksi.getSource() == encrypt) {
-	        	plaintext = ByteUtil.hexToBytes(br.readLine());
-	        	xts.processDataUnit(plaintext, 0, createdCipherText, 0, dataUnitNumber);
-	        	outFile.write(ByteUtil.bytesToHex(createdCipherText));
-	        } else {
-	        	ciphertext = ByteUtil.hexToBytes(br.readLine());
-	        	cipher.init(false, params);
-		        xts.resetCipher(cipher);
-		        xts.processDataUnit(ciphertext, 0, decryptedPlainText, 0, dataUnitNumber);
-		        outFile.write(ByteUtil.bytesToHex(decryptedPlainText));
-        	}
-        	outFile.close();
+                XTS xts = new XTS(sourcePath, keyPath, targetPath);
+            	FileWriter outFile = new FileWriter(targetPath);
+    	        if (aksi.getSource() == encrypt) {
+                    xts.encrypt();
+    	        } else {
+                    xts.decrypt();
+            	}
+            	outFile.close();
         	} catch (Exception e) {
         		e.printStackTrace(System.out);
         	}

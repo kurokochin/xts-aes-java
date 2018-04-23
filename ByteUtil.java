@@ -1,5 +1,8 @@
 public final class ByteUtil {
 
+    /** Helper class for converting bytes to hex representation
+     * @param bytes, the array of bytes
+     */
     public static final String bytesToHex(final byte[] bytes) {
         if (bytes == null)
             return null;
@@ -18,6 +21,10 @@ public final class ByteUtil {
         }
     }
 
+    /**
+     * Convert hex strings to array of bytes
+     * @param hexBytes, the hex strings
+     */
     public static final byte[] hexToBytes(final String hexBytes) {
         if (hexBytes == null | hexBytes.length() < 2)
             return null;

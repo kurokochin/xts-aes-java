@@ -11,13 +11,17 @@ import javax.xml.bind.DatatypeConverter;
 
 public class AES {
 
+    /** Key to be used for encrypt/decrypt */
     private String keyHex;
-
 
     public AES(byte[] keyHex) {
         this.keyHex = ByteUtil.bytesToHex(keyHex);
     }
 
+    /**
+     * Encryption method using AES, using javax.crypto library
+     * @param textHex, byte to be encrypted
+     */
     public byte[] encrypt(byte[] textHex) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         SecretKey key = new SecretKeySpec(DatatypeConverter.parseHexBinary(keyHex), "AES");
 
@@ -29,6 +33,11 @@ public class AES {
         return result;
     }
     
+
+    /**
+     * Decryption method using AES, using javax.crypto library
+     * @param textHex, byte to be decrypted
+     */
     public byte[] decrypt(byte[] textHex) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 
         SecretKey key = new SecretKeySpec(DatatypeConverter.parseHexBinary(keyHex), "AES");

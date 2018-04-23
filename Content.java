@@ -110,10 +110,12 @@ public class Content extends JPanel implements ActionListener {
             targetFileName.setText(fpTarget.path);
         } else if (aksi.getSource() == encrypt || aksi.getSource() == decrypt) {
         	try {
+                /** Gets all of the required file paths */
                 String sourcePath = sourceField.getText();
                 String targetPath = targetFileName.getText();
                 String keyPath = keyField.getText();
 
+                /** Encrypt/Decrypt using XTS-AES */
                 XTS xts = new XTS(sourcePath, keyPath, targetPath);
                 boolean forEncryption;
             	if (aksi.getSource() == encrypt) {
